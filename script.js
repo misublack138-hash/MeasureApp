@@ -394,7 +394,7 @@ function carregarTelaMedidas(){
     carregarMedidas();
 }
 
-function salvarMedida(){
+async function salvarMedida(){
 
     const medida =
         document.getElementById(
@@ -404,45 +404,70 @@ function salvarMedida(){
     if(medida === "")
         return;
 
-    const medidas =
-        JSON.parse(
-            localStorage.getItem(
-                "medidas"
-            ) || "[]"
+    try{
+
+        const resposta =
+        await fetch(
+
+            "https://measureapp-api.onrender.com/medidas",
+
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+
+                body:JSON.stringify({
+
+                    usuario:
+                    localStorage.getItem(
+                        "usuario"
+                    ),
+
+                    valor:
+                    medida,
+
+                    data:
+                    new Date().toLocaleString(
+                        "pt-BR"
+                    )
+
+                })
+
+            }
+
         );
 
-    medidas.push({
+        const dados =
+        await resposta.json();
 
-        usuario:
-        localStorage.getItem(
-            "usuario"
-        ),
+        if(dados.sucesso){
 
-        valor:
-        medida,
+            alert(
+                "Medida salva!"
+            );
 
-        data:
-        new Date().toLocaleString(
-            "pt-BR"
-        )
+            document.getElementById(
+                "medida"
+            ).value = "";
 
-    });
+        }
 
-    localStorage.setItem(
+    }catch(error){
 
-        "medidas",
+        console.error(
+            error
+        );
 
-        JSON.stringify(
-            medidas
-        )
+        alert(
+            "Erro ao salvar medida."
+        );
 
-    );
+    }
 
-    document.getElementById(
-        "medida"
-    ).value = "";
-
-    carregarMedidas();
 }
 
 function carregarMedidas(){
