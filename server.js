@@ -158,13 +158,19 @@ app.get(
     }
 );
 
+const PORT =
+process.env.PORT || 3000;
+
 app.listen(
-    3000,
+
+    PORT,
+
     ()=>{
 
         console.log(
-            "Servidor rodando na porta 3000"
+            `Servidor rodando na porta ${PORT}`
         );
 
     }
+
 );
