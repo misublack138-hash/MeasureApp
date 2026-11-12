@@ -470,7 +470,7 @@ async function salvarMedida(){
 
 }
 
-function carregarMedidas(){
+async function carregarMedidas(){
 
     const historico =
         document.getElementById(
@@ -485,41 +485,135 @@ function carregarMedidas(){
             "usuario"
         );
 
-    const medidas =
-        JSON.parse(
-            localStorage.getItem(
-                "medidas"
-            ) || "[]"
+    try{
+
+        const resposta =
+        await fetch(
+
+            "https://measureapp-api.onrender.com/medidas"
+
         );
 
-    const minhasMedidas =
+        const medidas =
+        await resposta.json();
+
+        const minhasMedidas =
         medidas.filter(
             item =>
             item.usuario === usuario
         );
 
-    let ultima = "-";
-    let maior = "-";
+        let ultima = "-";
+        let maior = "-";
 
-    if(
-        minhasMedidas.length > 0
-    ){
+        if(
+            minhasMedidas.length > 0
+        ){
 
-        ultima =
-        minhasMedidas[
-            minhasMedidas.length - 1
-        ].valor + " cm";
+            ultima =
+            minhasMedidas[
+                minhasMedidas.length - 1
+            ].valor + " cm";
 
-        maior =
-        Math.max(
+            maior =
+            Math.max(
+                ...minhasMedidas.map(
+                    item =>
+                    Number(item.valor)
+                )
+            ) + " cm";
+        }
 
-            ...minhasMedidas.map(
-                item =>
-                Number(item.valor)
-            )
+        let html = `
 
-        ) + " cm";
+            <div class="dashboard-cards">
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-titulo">
+                        Total
+                    </div>
+
+                    <div class="dashboard-valor">
+                        ${minhasMedidas.length}
+                    </div>
+
+                </div>
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-titulo">
+                        Última
+                    </div>
+
+                    <div class="dashboard-valor">
+                        ${ultima}
+                    </div>
+
+                </div>
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-titulo">
+                        Maior
+                    </div>
+
+                    <div class="dashboard-valor">
+                        ${maior}
+                    </div>
+
+                </div>
+
+            </div>
+
+            <h3>
+                Histórico de Medidas
+            </h3>
+
+        `;
+
+        [...minhasMedidas]
+        .reverse()
+        .forEach(item => {
+
+            html += `
+
+                <div class="medida-card">
+
+                    <div
+                        class="medida-numero">
+
+                        ${item.valor} cm
+
+                    </div>
+
+                    <div
+                        class="medida-data">
+
+                        📅 ${item.data}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+        historico.innerHTML =
+            html;
+
+    }catch(error){
+
+        console.error(
+            error
+        );
+
+        historico.innerHTML =
+        "Erro ao carregar medidas.";
+
     }
+
 
     let html = `
 
@@ -601,7 +695,7 @@ function carregarMedidas(){
         html;
 }
 
-function carregarRanking(){
+async function carregarRanking(){
 
     const pagina =
         document.getElementById(
@@ -613,155 +707,166 @@ function carregarRanking(){
             "usuario"
         );
 
-    const medidas =
-        JSON.parse(
-            localStorage.getItem(
-                "medidas"
-            ) || "[]"
-        );
+    try{
 
-    const ranking = {};
+        const resposta =
+            await fetch(
+                "https://measureapp-api.onrender.com/medidas"
+            );
 
-    medidas.forEach(item => {
+        const medidas =
+            await resposta.json();
 
-        const usuario =
-            item.usuario;
+        const ranking = {};
 
-        const valor =
-            Number(item.valor);
+        medidas.forEach(item => {
 
-        if(
-            !ranking[usuario] ||
-            valor > ranking[usuario]
-        ){
+            const usuario =
+                item.usuario;
 
-            ranking[usuario] =
-                valor;
-        }
-
-    });
-
-    const listaRanking =
-        Object.entries(
-            ranking
-        ).sort(
-            (a,b)=>
-            b[1]-a[1]
-        );
-
-    let posicao = "-";
-
-    listaRanking.forEach(
-        (item,index)=>{
+            const valor =
+                Number(item.valor);
 
             if(
-                item[0] ===
-                usuarioLogado
+                !ranking[usuario] ||
+                valor > ranking[usuario]
             ){
 
-                posicao =
-                    index + 1;
+                ranking[usuario] =
+                    valor;
+
             }
 
-        }
-    );
+        });
 
-    let html = `
+        const listaRanking =
+            Object.entries(ranking)
+            .sort(
+                (a,b) => b[1] - a[1]
+            );
 
-        <div class="card">
-
-            <h2>
-                🏆 Ranking Geral
-            </h2>
-
-    `;
-
-    if(
-        listaRanking.length === 0
-    ){
-
-        html += `
-
-            <p>
-                Nenhuma medida cadastrada.
-            </p>
-
-        `;
-    }
-
-    else{
+        let posicao = "-";
 
         listaRanking.forEach(
             (item,index)=>{
 
-                let medalha = "🏅";
+                if(
+                    item[0] === usuarioLogado
+                ){
 
-                if(index===0)
-                    medalha="🥇";
+                    posicao =
+                        index + 1;
 
-                if(index===1)
-                    medalha="🥈";
-
-                if(index===2)
-                    medalha="🥉";
-
-                html += `
-
-                    <div
-                        class="medida-card">
-
-                        <strong>
-
-                            ${medalha}
-                            ${item[0]}
-
-                        </strong>
-
-                        <div
-                            class="medida-numero">
-
-                            ${item[1]} cm
-
-                        </div>
-
-                    </div>
-
-                `;
+                }
 
             }
         );
 
+        let html = `
+            <div class="card">
+
+                <h2>
+                    🏆 Ranking Geral
+                </h2>
+        `;
+
+        if(
+            listaRanking.length === 0
+        ){
+
+            html += `
+                <p>
+                    Nenhuma medida cadastrada.
+                </p>
+            `;
+
+        } else {
+
+            listaRanking.forEach(
+                (item,index)=>{
+
+                    let medalha = "🏅";
+
+                    if(index === 0)
+                        medalha = "🥇";
+
+                    if(index === 1)
+                        medalha = "🥈";
+
+                    if(index === 2)
+                        medalha = "🥉";
+
+                    html += `
+                        <div class="medida-card">
+
+                            <strong>
+                                ${medalha}
+                                ${item[0]}
+                            </strong>
+
+                            <div class="medida-numero">
+                                ${item[1]} cm
+                            </div>
+
+                        </div>
+                    `;
+
+                }
+            );
+
+        }
+
+        html += `
+            <div
+                class="dashboard-card"
+                style="margin-top:20px;">
+
+                <div
+                    class="dashboard-titulo">
+
+                    Minha Posição
+
+                </div>
+
+                <div
+                    class="dashboard-valor">
+
+                    ${posicao}º
+
+                </div>
+
+            </div>
+
+            </div>
+        `;
+
+        pagina.innerHTML =
+            html;
+
+    }catch(error){
+
+        console.error(
+            error
+        );
+
+        pagina.innerHTML = `
+            <div class="card">
+
+                <h2>
+                    🏆 Ranking
+                </h2>
+
+                <p>
+                    Erro ao carregar ranking.
+                </p>
+
+            </div>
+        `;
+
     }
 
-    html += `
-
-        <div
-            class="dashboard-card"
-            style="margin-top:20px;">
-
-            <div
-                class="dashboard-titulo">
-
-                Minha Posição
-
-            </div>
-
-            <div
-                class="dashboard-valor">
-
-                ${posicao}º
-
-            </div>
-
-        </div>
-
-        </div>
-
-    `;
-
-    pagina.innerHTML =
-        html;
 }
+
 function carregarContestacoes(){
 
     const pagina =

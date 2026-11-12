@@ -251,6 +251,107 @@ app.get(
     }
 );
 
+app.post(
+    "/contestacoes",
+    (req,res)=>{
+
+        const {
+
+            autor,
+            contestado,
+            motivo,
+            status,
+            resposta,
+            data
+
+        } = req.body;
+
+        db.run(
+
+            `
+            INSERT INTO contestacoes(
+
+                autor,
+                contestado,
+                motivo,
+                status,
+                resposta,
+                data
+
+            )
+
+            VALUES(?,?,?,?,?,?)
+
+            `,
+
+            [
+
+                autor,
+                contestado,
+                motivo,
+                status,
+                resposta,
+                data
+
+            ],
+
+            err => {
+
+                if(err){
+
+                    return res
+                    .status(400)
+                    .json({
+                        sucesso:false
+                    });
+
+                }
+
+                res.json({
+                    sucesso:true
+                });
+
+            }
+
+        );
+
+    }
+);
+
+app.get(
+    "/contestacoes",
+    (req,res)=>{
+
+        db.all(
+
+            `
+            SELECT *
+            FROM contestacoes
+            `,
+
+            [],
+
+            (err,rows)=>{
+
+                if(err){
+
+                    return res
+                    .status(500)
+                    .json({
+                        erro:err.message
+                    });
+
+                }
+
+                res.json(rows);
+
+            }
+
+        );
+
+    }
+);
+
 app.listen(
 
     PORT,
