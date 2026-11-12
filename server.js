@@ -214,6 +214,43 @@ app.post(
     }
 );
 
+app.get(
+    "/medidas",
+    (req,res)=>{
+
+        db.all(
+
+            `
+            SELECT *
+            FROM medidas
+            `,
+
+            [],
+
+            (err,rows)=>{
+
+                if(err){
+
+                    return res
+                    .status(500)
+                    .json({
+                        erro:
+                        err.message
+                    });
+
+                }
+
+                res.json(
+                    rows
+                );
+
+            }
+
+        );
+
+    }
+);
+
 app.listen(
 
     PORT,
