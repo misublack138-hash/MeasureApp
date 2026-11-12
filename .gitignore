@@ -1,0 +1,11 @@
+node_modules/
+
+measureapp.db
+
+dist/
+
+.env
+
+*.log
+
+*.7z
