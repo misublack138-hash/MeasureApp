@@ -161,6 +161,59 @@ app.get(
 const PORT =
 process.env.PORT || 3000;
 
+app.post(
+    "/medidas",
+    (req,res)=>{
+
+        const {
+            usuario,
+            valor,
+            data
+        } = req.body;
+
+        db.run(
+
+            `
+            INSERT INTO medidas(
+                usuario,
+                valor,
+                data
+            )
+
+            VALUES(?,?,?)
+            `,
+
+            [
+                usuario,
+                valor,
+                data
+            ],
+
+            err => {
+
+                if(err){
+
+                    return res
+                    .status(400)
+                    .json({
+                        sucesso:false
+                    });
+
+                }
+
+                res.json({
+
+                    sucesso:true
+
+                });
+
+            }
+
+        );
+
+    }
+);
+
 app.listen(
 
     PORT,

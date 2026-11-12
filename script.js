@@ -1,4 +1,4 @@
-function login(){
+async function login(){
 
     const usuario =
         document.getElementById(
@@ -10,28 +10,66 @@ function login(){
             "senha"
         ).value;
 
-    const usuarios =
-        JSON.parse(
-            localStorage.getItem(
-                "usuarios"
-            ) || "[]"
+    try{
+
+        const resposta =
+        await fetch(
+
+            "https://measureapp-api.onrender.com/login",
+
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+
+                body:JSON.stringify({
+
+                    usuario,
+                    senha
+
+                })
+
+            }
+
         );
 
-    const encontrado =
-        usuarios.find(
-            u =>
-            u.usuario === usuario &&
-            u.senha === senha
+        if(
+            !resposta.ok
+        ){
+
+            document.getElementById(
+                "status"
+            ).innerHTML =
+            "Usuário ou senha inválidos.";
+
+            return;
+        }
+
+        const dados =
+        await resposta.json();
+
+        localStorage.setItem(
+            "usuario",
+            usuario
         );
 
-    if(!encontrado){
+        carregarHome();
+
+    }catch(error){
+
+        console.error(
+            error
+        );
 
         document.getElementById(
             "status"
         ).innerHTML =
-        "Usuário ou senha inválidos.";
+        "Erro ao conectar ao servidor.";
 
-        return;
     }
 
     localStorage.setItem(
@@ -88,7 +126,7 @@ function voltarLogin(){
     location.reload();
 }
 
-function criarConta(){
+async function criarConta(){
 
     const usuario =
         document.getElementById(
@@ -113,28 +151,64 @@ function criarConta(){
         return;
     }
 
-    let usuarios =
-        JSON.parse(
-            localStorage.getItem(
-                "usuarios"
-            ) || "[]"
+    try{
+
+        const resposta =
+        await fetch(
+
+            "https://measureapp-api.onrender.com/cadastro",
+
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+
+                body:JSON.stringify({
+
+                    usuario,
+                    senha
+
+                })
+
+            }
+
         );
 
-    const existe =
-        usuarios.find(
-            u =>
-            u.usuario === usuario
+        const dados =
+        await resposta.json();
+
+        if(
+            dados.sucesso
+        ){
+
+            alert(
+                "Conta criada com sucesso!"
+            );
+
+            voltarLogin();
+
+        }else{
+
+            alert(
+                "Erro ao criar conta."
+            );
+
+        }
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(
+            "Erro ao conectar ao servidor."
         );
 
-    if(existe){
-
-        document.getElementById(
-            "status"
-        ).innerHTML =
-        "Usuário já existe.";
-
-        return;
     }
+
 
     usuarios.push({
 
