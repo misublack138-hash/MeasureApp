@@ -920,7 +920,7 @@ function carregarContestacoes(){
     pagina.innerHTML = html;
 }
 
-function enviarContestacao(){
+async function enviarContestacao(){
 
     const usuarioContestado =
         document.getElementById(
@@ -939,92 +939,85 @@ function enviarContestacao(){
         return;
     }
 
-    const contestacoes =
-        JSON.parse(
-            localStorage.getItem(
-                "contestacoes"
-            ) || "[]"
+    try{
+
+        const resposta =
+        await fetch(
+
+            "https://measureapp-api.onrender.com/contestacoes",
+
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+
+                body:JSON.stringify({
+
+                    autor:
+                    localStorage.getItem(
+                        "usuario"
+                    ),
+
+                    contestado:
+                    usuarioContestado,
+
+                    motivo:
+                    motivo,
+
+                    status:
+                    "Pendente",
+
+                    resposta:
+                    "",
+
+                    data:
+                    new Date().toLocaleString(
+                        "pt-BR"
+                    )
+
+                })
+
+            }
+
         );
 
-    const novoId =
-        Date.now();
+        const dados =
+        await resposta.json();
 
-    contestacoes.push({
+        if(
+            dados.sucesso
+        ){
 
-        id:
-        novoId,
+            alert(
+                "Contestação enviada!"
+            );
 
-        autor:
-        localStorage.getItem(
-            "usuario"
-        ),
+            document.getElementById(
+                "usuarioContestado"
+            ).value = "";
 
-        contestado:
-        usuarioContestado,
+            document.getElementById(
+                "motivoContestacao"
+            ).value = "";
 
-        motivo:
-        motivo,
+        }
 
-        status:
-        "Pendente",
+    }catch(error){
 
-        resposta:
-        "",
-
-        data:
-        new Date().toLocaleString(
-            "pt-BR"
-        )
-
-    });
-
-    localStorage.setItem(
-
-        "contestacoes",
-
-        JSON.stringify(
-            contestacoes
-        )
-
-    );
-
-    const notificacoes =
-        JSON.parse(
-            localStorage.getItem(
-                "notificacoes"
-            ) || "[]"
+        console.error(
+            error
         );
 
-    notificacoes.push({
+        alert(
+            "Erro ao enviar contestação."
+        );
 
-        destinatario:
-        usuarioContestado,
+    }
 
-        mensagem:
-        `${localStorage.getItem("usuario")} contestou uma medida sua.`,
-
-        data:
-        new Date().toLocaleString(
-            "pt-BR"
-        )
-
-    });
-
-    localStorage.setItem(
-
-        "notificacoes",
-
-        JSON.stringify(
-            notificacoes
-        )
-
-    );
-
-    carregarContestacoes();
-
-    alert(
-        "Contestação enviada!"
-    );
 }
 
 function responderContestacao(id){

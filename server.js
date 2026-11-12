@@ -352,6 +352,98 @@ app.get(
     }
 );
 
+app.post(
+    "/notificacoes",
+    (req,res)=>{
+
+        const {
+
+            destinatario,
+            mensagem,
+            data
+
+        } = req.body;
+
+        db.run(
+
+            `
+            INSERT INTO notificacoes(
+
+                destinatario,
+                mensagem,
+                data
+
+            )
+
+            VALUES(?,?,?)
+
+            `,
+
+            [
+
+                destinatario,
+                mensagem,
+                data
+
+            ],
+
+            err => {
+
+                if(err){
+
+                    return res
+                    .status(400)
+                    .json({
+                        sucesso:false
+                    });
+
+                }
+
+                res.json({
+                    sucesso:true
+                });
+
+            }
+
+        );
+
+    }
+);
+
+app.get(
+    "/notificacoes",
+    (req,res)=>{
+
+        db.all(
+
+            `
+            SELECT *
+            FROM notificacoes
+            `,
+
+            [],
+
+            (err,rows)=>{
+
+                if(err){
+
+                    return res
+                    .status(500)
+                    .json({
+                        erro:err.message
+                    });
+
+                }
+
+                res.json(rows);
+
+            }
+
+        );
+
+    }
+);
+
 app.listen(
 
     PORT,
